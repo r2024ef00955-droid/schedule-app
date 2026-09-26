@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="予定管理">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>予定管理</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",sans-serif;background:#f5f6fa;color:#222}
+header{padding:22px 18px 12px;background:white;position:sticky;top:0;z-index:2;border-bottom:1px solid #eee}
+h1{font-size:25px;margin:0 0 4px}.date{color:#777;font-size:14px}
+main{max-width:680px;margin:auto;padding:14px 14px 90px}
+.card{background:white;border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 2px 10px #00000008}
+.title{font-weight:700;font-size:17px;margin-bottom:10px}.item{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #eee}.item:last-child{border:0}
+.check{width:22px;height:22px}.done{text-decoration:line-through;color:#999}.tag{font-size:12px;background:#eef1ff;padding:4px 8px;border-radius:10px;margin-left:auto}
+button{border:0;border-radius:12px;padding:10px 14px;background:#222;color:white;font-weight:600}.danger{background:#eee;color:#555}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;display:flex;justify-content:space-around;padding:9px 4px calc(9px + env(safe-area-inset-bottom));z-index:5}
+nav button{background:none;color:#555;padding:7px 10px;font-weight:500}.fab{position:fixed;right:20px;bottom:75px;width:54px;height:54px;border-radius:50%;font-size:25px;padding:0;z-index:4}
+input,select{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin:5px 0 10px;font-size:16px}
+.small{font-size:13px;color:#777}
+</style>
+</head>
+<body>
+<header><h1>📅 予定管理</h1><div class="date" id="today"></div></header>
+<main id="app"></main>
+<button class="fab" onclick="addTask()">＋</button>
+<nav>
+<button onclick="showToday()">🏠<br>今日</button>
+<button onclick="showCalendar()">🗓️<br>予定</button>
+<button onclick="showTasks()">✅<br>タスク</button>
+</nav>
+<script>
+const KEY="scheduleAppV1";
+let data=JSON.parse(localStorage.getItem(KEY)||'null')||{
+ tasks:[
+  {id:1,title:"英単語帳①を進める",date:"2026-09-26",done:false},
+  {id:2,title:"英単語帳②を進める",date:"2026-09-26",done:false}
+ ],
+ events:[
+  {date:"2026-09-29",title:"テスト週間"},
+  {date:"2026-10-06",title:"テスト"},
+  {date:"2026-10-13",title:"英単語帳2冊 暗記期限"},
+  {date:"2026-10-22",title:"文化祭バンド"},
+  {date:"2026-10-23",title:"体育祭"}
+ ]};
+function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+function todayStr(){return new Date().toISOString().slice(0,10)}
+function jp(d){return new Date(d+"T00:00:00").toLocaleDateString("ja-JP",{month:"long",day:"numeric",weekday:"short"})}
+document.getElementById("today").textContent=jp(todayStr());
+function showToday(){
+ const t=todayStr(), tasks=data.tasks.filter(x=>x.date===t);
+ document.getElementById("app").innerHTML=`
+ <section class="card"><div class="title">今日やること</div>
+ ${tasks.length?tasks.map(taskHTML).join(""):'<div class="small">今日のタスクはありません。</div>'}</section>
+ <section class="card"><div class="title">これからの予定</div>
+ ${data.events.filter(e=>e.date>=t).slice(0,6).map(e=>`<div class="item"><div><b>${jp(e.date)}</b><br>${e.title}</div></div>`).join("")}</section>
+ <section class="card"><div class="title">マネージャーから</div><div>締切が近いものから、少しずつ進めよう。💪</div></section>`;
+}
+function taskHTML(x){return `<div class="item"><input class="check" type="checkbox" ${x.done?"checked":""} onchange="toggle(${x.id})"><span class="${x.done?"done":""}">${x.title}</span></div>`}
+function toggle(id){let x=data.tasks.find(x=>x.id===id);x.done=!x.done;save();showToday();showTasks()}
+function showTasks(){document.getElementById("app").innerHTML=`<section class="card"><div class="title">タスク一覧</div>${data.tasks.map(taskHTML).join("")||'<div class="small">タスクなし</div>'}</section>`}
+function showCalendar(){document.getElementById("app").innerHTML=`<section class="card"><div class="title">予定一覧</div>${data.events.map(e=>`<div class="item"><div><b>${jp(e.date)}</b><br>${e.title}</div></div>`).join("")}</section>`}
+function addTask(){
+ const title=prompt("タスク名を入力してね");
+ if(!title)return;
+ const date=prompt("日付を入力（例：2026-10-01）",todayStr());
+ if(!date)return;
+ data.tasks.push({id:Date.now(),title,date,done:false});save();showToday();
+}
+if("serviceWorker"in navigator) navigator.serviceWorker.register("sw.js");
+showToday();
+</script>
+</body></html>
