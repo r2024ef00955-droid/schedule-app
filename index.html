@@ -8,151 +8,78 @@
 <meta name="apple-mobile-web-app-title" content="予定管理">
 <title>予定管理</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;background:#f4f5f8;color:#222}
-header{background:#fff;padding:28px 22px 18px;border-bottom:1px solid #ddd;position:sticky;top:0;z-index:3}
-h1{margin:0;font-size:30px}.date{color:#777;margin-top:5px;font-size:16px}
-main{padding:18px 16px 100px;max-width:720px;margin:auto}
-.card{background:#fff;border-radius:22px;padding:20px;margin-bottom:16px;box-shadow:0 2px 12px #0000000b}
-.card h2{margin:0 0 12px;font-size:21px}.muted{color:#777}
-.item{padding:13px 0;border-bottom:1px solid #eee}.item:last-child{border-bottom:0}
-.badge{display:inline-block;background:#eef2ff;border-radius:999px;padding:4px 9px;font-size:12px;margin-right:5px}
-button{border:0;border-radius:14px;padding:12px 16px;font-size:15px;background:#222;color:white}
-button.secondary{background:#eee;color:#222}.danger{background:#ffe8e8;color:#c22}
-.fab{position:fixed;right:20px;bottom:82px;width:62px;height:62px;border-radius:50%;font-size:32px;z-index:4}
-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;height:68px;display:flex;z-index:4}
-nav button{flex:1;background:white;color:#555;border-radius:0;font-size:13px;padding:5px}
-nav button.active{color:#111;font-weight:bold}
-label{display:block;font-size:13px;color:#666;margin:12px 0 5px}
-input,select{width:100%;padding:13px;border:1px solid #ddd;border-radius:12px;background:#fff;font-size:16px}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.actions{display:flex;gap:8px;margin-top:18px}.actions button{flex:1}
-.plan{display:flex;gap:10px;align-items:flex-start;padding:11px 0;border-bottom:1px solid #eee}
-.plan input{width:22px;margin-top:3px}.time{font-weight:700;min-width:54px}
-small{color:#777}
-.empty{padding:18px 0;color:#888}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Yu Gothic",sans-serif;background:#f3f5f8;color:#171717;padding-bottom:75px}
+header{background:#fff;padding:24px 22px 18px;border-bottom:1px solid #ddd}h1{margin:0;font-size:30px}.date{color:#777;margin-top:5px}
+main{padding:16px;max-width:720px;margin:auto}.card{background:#fff;border-radius:22px;padding:20px;margin-bottom:14px;box-shadow:0 2px 12px #00000008}.card h2{margin:0 0 12px;font-size:21px}
+.item{padding:13px 0;border-bottom:1px solid #eee}.item:last-child{border:0}.item strong{display:block;font-size:17px}.muted{color:#777;font-size:14px;margin-top:4px}
+button{border:0;border-radius:14px;padding:12px 15px;font-size:15px;background:#111;color:#fff}.secondary{background:#eee!important;color:#222!important}.danger{background:#fff0f0!important;color:#c33!important}
+.fab{position:fixed;right:18px;bottom:88px;width:58px;height:58px;border-radius:50%;font-size:32px;z-index:7}
+nav{position:fixed;bottom:0;left:0;right:0;height:70px;background:#fff;border-top:1px solid #ddd;display:flex;z-index:6}nav button{flex:1;border-radius:0;background:#fff;color:#777;padding:7px}nav button.active{color:#111;font-weight:700}
+label{display:block;font-size:13px;color:#555;margin:12px 0 5px}input,select{width:100%;padding:12px;border:1px solid #ccc;border-radius:12px;background:#fff;font-size:16px}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal{position:fixed;inset:0;background:#0007;display:none;align-items:flex-end;z-index:20}.modal.open{display:flex}.sheet{background:#fff;width:100%;max-height:92vh;overflow:auto;border-radius:24px 24px 0 0;padding:22px 18px 30px}.sheet h2{margin-top:0}.actions{display:flex;gap:10px;margin-top:18px}.actions button{flex:1}.hidden{display:none}.plan{background:#f7f8fa;border-radius:14px;padding:12px;margin-top:8px}.done{text-decoration:line-through;opacity:.55}.small{padding:7px 10px;font-size:13px;margin-top:8px}
 </style>
 </head>
 <body>
-<header>
-  <h1>📅 予定管理</h1>
-  <div class="date" id="todayLabel"></div>
-</header>
-<main id="app"></main>
-<button class="fab" onclick="openAdd()">＋</button>
-<nav>
-  <button id="navToday" class="active" onclick="showToday()">🏠<br>今日</button>
-  <button id="navSchedule" onclick="showSchedule()">🗓️<br>予定</button>
-  <button id="navTask" onclick="showTasks()">✅<br>タスク</button>
-</nav>
+<header><h1>📅 予定管理</h1><div class="date" id="today"></div></header>
+<main id="home">
+<section class="card"><h2>今日やること</h2><div id="todayList"></div></section>
+<section class="card"><h2>これからの予定</h2><div id="upcoming"></div></section>
+<section class="card"><h2>マネージャーから</h2><p>期限と必要時間を入れると、毎日の勉強時間を自動で逆算します。💪</p></section>
+</main>
+<main id="schedule" class="hidden"><section class="card"><h2>予定一覧</h2><div id="scheduleList"></div></section></main>
+<main id="tasks" class="hidden"><section class="card"><h2>勉強・タスク</h2><div id="taskList"></div></section></main>
+<button class="fab" onclick="openModal()">＋</button>
+<nav><button id="navHome" class="active" onclick="showTab('home')">🏠<br>今日</button><button id="navSchedule" onclick="showTab('schedule')">🗓️<br>予定</button><button id="navTasks" onclick="showTab('tasks')">✅<br>タスク</button></nav>
+
+<div class="modal" id="modal"><div class="sheet">
+<h2>予定・勉強を追加</h2>
+<label>名前</label><input id="title" placeholder="例：英単語・文化祭バンド">
+<label>種類</label><select id="type" onchange="toggleStudy()"><option value="event">予定</option><option value="study">勉強・課題（自動逆算）</option></select>
+<div class="row"><div><label>開始日</label><input type="date" id="startDate"></div><div><label>開始時刻</label><input type="time" id="startTime" value="18:00"></div></div>
+<div class="row"><div><label>終了日 / 期限</label><input type="date" id="endDate"></div><div><label>終了時刻</label><input type="time" id="endTime" value="20:00"></div></div>
+<div id="studyFields" class="hidden"><label>必要な勉強時間（合計・分）</label><input type="number" id="totalMin" value="300" min="10" step="10"><label>1日にできる最大時間（分）</label><input type="number" id="dailyMax" value="60" min="10" step="10"></div>
+<div class="actions"><button class="secondary" onclick="closeModal()">キャンセル</button><button onclick="saveItem()">追加する</button></div>
+</div></div>
 
 <script>
-const KEY="scheduleAppV3";
+const KEY="scheduleAppV4";
 let data=JSON.parse(localStorage.getItem(KEY)||'{"events":[],"tasks":[]}');
-
-function save(){localStorage.setItem(KEY,JSON.stringify(data))}
-function pad(n){return String(n).padStart(2,"0")}
-function ds(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
-function jp(s){const d=new Date(s+"T00:00:00");return `${d.getMonth()+1}/${d.getDate()}（${"日月火水木金土"[d.getDay()]}）`}
-function today(){return ds(new Date())}
-function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
-
-function setNav(active){
-  ["Today","Schedule","Task"].forEach(x=>document.getElementById("nav"+x).classList.toggle("active",x===active))
-}
-function showToday(){
- setNav("Today");
- const t=today();
- const ev=data.events.filter(e=>e.start<=t&&t<=e.end).sort((a,b)=>(a.time||"99:99").localeCompare(b.time||"99:99"));
- const tasks=data.tasks.filter(x=>x.date===t);
- document.getElementById("app").innerHTML=`
- <section class="card"><h2>今日やること</h2>
- ${tasks.length?tasks.map(taskHTML).join(""):`<div class="empty">今日のタスクはありません。＋から追加できます。</div>`}
- </section>
- <section class="card"><h2>今日の予定</h2>
- ${ev.length?ev.map(e=>eventHTML(e)).join(""):`<div class="empty">今日の予定はありません。</div>`}
- </section>
- <section class="card"><h2>マネージャーから</h2>
- <div class="muted">予定を期間・時間つきで入れると、期限までの勉強タスクを自動で分配できます。💪</div></section>`;
-}
-function eventHTML(e){
- return `<div class="item"><b>${esc(e.title)}</b><br>
- <span class="badge">${jp(e.start)}〜${jp(e.end)}</span>
- ${e.time?`<span class="badge">${esc(e.time)}${e.endTime?"〜"+esc(e.endTime):""}</span>`:""}
- ${e.category?`<span class="badge">${esc(e.category)}</span>`:""}
- </div>`
-}
-function taskHTML(x){
- return `<div class="item"><label style="display:flex;gap:9px;align-items:center;margin:0">
- <input type="checkbox" ${x.done?"checked":""} onchange="toggleTask('${x.id}')">
- <span style="${x.done?"text-decoration:line-through;color:#999":""}"><b>${esc(x.title)}</b><br><small>${x.minutes?x.minutes+"分":""}</small></span></label></div>`
-}
-function showSchedule(){
- setNav("Schedule");
- const ev=[...data.events].sort((a,b)=>a.start.localeCompare(b.start));
- document.getElementById("app").innerHTML=`<section class="card"><h2>予定</h2>
- ${ev.length?ev.map(e=>eventHTML(e)+`<div class="actions"><button class="danger" onclick="delEvent('${e.id}')">削除</button></div>`).join(""):`<div class="empty">まだ予定がありません。</div>`}</section>`;
-}
-function showTasks(){
- setNav("Task");
- const ts=[...data.tasks].sort((a,b)=>a.date.localeCompare(b.date));
- document.getElementById("app").innerHTML=`<section class="card"><h2>自動作成されたタスク</h2>
- ${ts.length?ts.map(taskHTML).join(""):`<div class="empty">まだタスクがありません。</div>`}</section>`;
-}
-function toggleTask(id){const x=data.tasks.find(t=>t.id===id);if(x){x.done=!x.done;save();showToday()}}
-function delEvent(id){data.events=data.events.filter(e=>e.id!==id);save();showSchedule()}
-
-function openAdd(){
- document.getElementById("app").innerHTML=`<section class="card">
- <h2>予定を追加</h2>
- <label>予定・勉強内容</label><input id="title" placeholder="例：英単語2冊">
- <div class="row">
-  <div><label>開始日</label><input id="start" type="date" value="${today()}"></div>
-  <div><label>終了日・期限</label><input id="end" type="date" value="${today()}"></div>
- </div>
- <div class="row">
-  <div><label>開始時間</label><input id="time" type="time"></div>
-  <div><label>終了時間</label><input id="endTime" type="time"></div>
- </div>
- <label>種類</label><select id="category"><option>予定</option><option>勉強</option><option>学校</option><option>部活</option><option>その他</option></select>
- <label>毎日やる時間（勉強の場合）</label><input id="minutes" type="number" min="0" step="5" placeholder="例：30">
- <label>総勉強時間（期限から逆算する場合）</label><input id="total" type="number" min="0" step="10" placeholder="例：300（5時間）">
- <div class="actions"><button class="secondary" onclick="showToday()">キャンセル</button><button onclick="addEvent()">追加する</button></div>
- </section>`;
- window.scrollTo(0,0);
-}
-function addEvent(){
- const title=document.getElementById("title").value.trim();
- const start=document.getElementById("start").value,end=document.getElementById("end").value;
- if(!title||!start||!end){alert("内容・開始日・終了日を入力してください");return}
- if(end<start){alert("終了日は開始日以降にしてください");return}
- const e={id:Date.now().toString(),title,start,end,time:document.getElementById("time").value,endTime:document.getElementById("endTime").value,category:document.getElementById("category").value};
- data.events.push(e);
- const minutes=Number(document.getElementById("minutes").value||0);
- const total=Number(document.getElementById("total").value||0);
- if((e.category==="勉強"||total>0)&&total>0){
-   makePlan(title,start,end,total);
- } else if(e.category==="勉強"&&minutes>0){
-   makeDailyPlan(title,start,end,minutes);
+const pad=n=>String(n).padStart(2,'0');
+function dateStr(d=new Date()){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
+function jp(d){return new Date(d+"T00:00:00").toLocaleDateString("ja-JP",{month:"numeric",day:"numeric",weekday:"short"})}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",""":"&quot;","'":"&#39;"}[c]))}
+function save(){localStorage.setItem(KEY,JSON.stringify(data));render()}
+function showTab(id){["home","schedule","tasks"].forEach(x=>document.getElementById(x).classList.toggle("hidden",x!==id));["navHome","navSchedule","navTasks"].forEach(x=>document.getElementById(x).classList.remove("active"));document.getElementById("nav"+id[0].toUpperCase()+id.slice(1)).classList.add("active");render()}
+function openModal(){let t=dateStr();title.value="";type.value="event";startDate.value=t;endDate.value=t;startTime.value="18:00";endTime.value="20:00";totalMin.value=300;dailyMax.value=60;toggleStudy();modal.classList.add("open")}
+function closeModal(){modal.classList.remove("open")}
+function toggleStudy(){studyFields.classList.toggle("hidden",type.value!=="study")}
+function saveItem(){
+ let name=title.value.trim(), sd=startDate.value, ed=endDate.value;
+ if(!name||!sd||!ed){alert("名前・日付を入れてください");return}
+ if(ed<sd){alert("終了日/期限は開始日以降にしてください");return}
+ if(type.value==="event"){data.events.push({id:Date.now(),title:name,start:sd,startTime:startTime.value,end:ed,endTime:endTime.value})}
+ else{
+  let total=Number(totalMin.value), max=Number(dailyMax.value), d=new Date(sd+"T00:00:00"), end=new Date(ed+"T00:00:00"), days=[];
+  while(d<=end){days.push(dateStr(d));d.setDate(d.getDate()+1)}
+  let remain=total;
+  days.forEach((day,i)=>{let left=days.length-i, mins=Math.min(max,Math.ceil(remain/left/10)*10);data.tasks.push({id:Date.now()+i,title:name,date:day,minutes:mins,done:false,deadline:ed});remain-=mins})
  }
- save();showToday();
+ save();closeModal()
 }
-function daysBetween(a,b){
- const out=[];let d=new Date(a+"T00:00:00"),z=new Date(b+"T00:00:00");
- while(d<=z){out.push(ds(d));d.setDate(d.getDate()+1)} return out;
+function toggleTask(id){let x=data.tasks.find(x=>x.id==id);if(x){x.done=!x.done;save()}}
+function delEvent(id){data.events=data.events.filter(x=>x.id!=id);save()}
+function render(){
+ let today=dateStr();
+ document.getElementById("today").textContent=new Date().toLocaleDateString("ja-JP",{year:"numeric",month:"numeric",day:"numeric",weekday:"short"});
+ let te=data.events.filter(x=>x.start<=today&&x.end>=today), tt=data.tasks.filter(x=>x.date===today&&!x.done);
+ todayList.innerHTML=(te.map(x=>`<div class="item"><strong>🗓️ ${esc(x.title)}</strong><div class="muted">${x.startTime}〜${x.endTime}</div></div>`).join("")+tt.map(x=>`<div class="item"><strong>📚 ${esc(x.title)}</strong><div class="muted">${x.minutes}分・期限 ${jp(x.deadline)}</div><button class="small" onclick="toggleTask(${x.id})">完了</button></div>`).join(""))||'<div class="muted">今日はまだ予定がありません。＋から追加できます。</div>';
+ let ev=data.events.filter(x=>x.end>=today).sort((a,b)=>a.start.localeCompare(b.start));
+ upcoming.innerHTML=ev.slice(0,8).map(x=>`<div class="item"><strong>${esc(x.title)}</strong><div class="muted">${jp(x.start)} ${x.startTime}〜 ${jp(x.end)} ${x.endTime}</div></div>`).join("")||'<div class="muted">予定はまだありません。</div>';
+ scheduleList.innerHTML=data.events.sort((a,b)=>a.start.localeCompare(b.start)).map(x=>`<div class="item"><strong>${esc(x.title)}</strong><div class="muted">${jp(x.start)} ${x.startTime}〜${jp(x.end)} ${x.endTime}</div><button class="small danger" onclick="delEvent(${x.id})">削除</button></div>`).join("")||'<div class="muted">予定はありません。</div>';
+ let ts=[...data.tasks].sort((a,b)=>a.date.localeCompare(b.date));
+ taskList.innerHTML=ts.map(x=>`<div class="plan ${x.done?'done':''}"><strong>${x.done?'☑️':'⬜'} ${esc(x.title)}</strong><div class="muted">${jp(x.date)}：${x.minutes}分 / 期限 ${jp(x.deadline)}</div><button class="small" onclick="toggleTask(${x.id})">${x.done?'未完了に戻す':'完了'}</button></div>`).join("")||'<div class="muted">勉強・課題はまだありません。</div>';
 }
-function makeDailyPlan(title,start,end,min){
- daysBetween(start,end).forEach(date=>{
-   data.tasks.push({id:Date.now()+Math.random(),title:title+"（勉強）",date,minutes:min,done:false});
- });
-}
-function makePlan(title,start,end,total){
- const days=daysBetween(start,end), n=days.length, base=Math.floor(total/n), rem=total%n;
- days.forEach((date,i)=>{
-   const m=base+(i<rem?1:0);
-   if(m>0)data.tasks.push({id:Date.now()+Math.random(),title:title+"（今日の勉強）",date,minutes:m,done:false});
- });
-}
-document.getElementById("todayLabel").textContent=new Date().toLocaleDateString("ja-JP",{year:"numeric",month:"numeric",day:"numeric",weekday:"short"});
-showToday();
+render();
 </script>
 </body>
 </html>
